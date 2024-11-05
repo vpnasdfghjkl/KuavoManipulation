@@ -57,4 +57,5 @@ ssh lemon@192.168.1.115
 # 打开遥操作(之前注意把遥操作臂放到合适的初始位置)
 python /home/lemon/robot_ros_application/catkin_ws/src/DynamixelSDK/python/tests/protocol1_0/position_publish_2_for_huawei.py
 # 之后就可以操作了如果遥操作臂不动，可以把线插紧试试
+
 ```
