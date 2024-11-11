@@ -68,7 +68,10 @@
    /rosout_agg
    /walkCommand
    ```
-
+2. **打开eef topic**
+   ```bash
+   python3 src/motion_capture_ik/scripts/ik_ros_convert.py
+   ```
 2. **查看某个话题的内容：**
    ```bash
    rostopic echo /robot_arm_q_v_tau
