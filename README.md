@@ -143,3 +143,8 @@
 **备注：**
 - 在进行控制之前，确保所有硬件连接正常，特别是急停按钮状态。
 - 保持机器人控制系统的实时监控，以确保每一步都能顺利执行。
+
+## 报错集中
+```
+[ERROR] [1731511285.818093894]: Client [/hand_srv_to_topic_2262570_1731511285686] wants topic /robot_arm_q_v_tau to have datatype/md5sum [dynamic_biped/robotArmInfo/3871141b674f003bc326e4d8da08f4ad], but our version has [dynamic_biped/robotArmQVVD/a7be9f5331e9207427b0c5c8ace7b977]. Dropping connection.
+```
