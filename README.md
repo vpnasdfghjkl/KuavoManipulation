@@ -14,11 +14,51 @@
 
 3. **启动机器人控制：**
    ```bash
-   cd ~/syp/kuavo_ws/
-   tmux new -s kuavo  # 创建一个新的 tmux 会话
-   roscore           # 启动 ROS 核心
-   ```
+   '''
+   PC_Terminal_1: roscore
+   PC_Terminal_2: roslaunch realsense2_camera rs_camera.launch color_fps:=30 color_height:=480 color_width:=640
+   '''
+
+   '''
+   PC_Terminal_3: ssh lemon@192.168.3.27 
+   '''
+   python /home/lemon/robot_ros_application/catkin_ws/src/DynamixelSDK/python/tests/protocol1_0/position_publish_2_for_huawei.py
+
+   '''
+   NUC_Terminal_1: 开启上肢状态控制节点
+   '''
+   sudo su 
+   cd /home/lab/syp/kuavo_ws/
+   source devel/setup.bash
+   rosrun dynamic_biped highlyDynamicRobot_node --real --cali
+   # 根据提示按两次“o”, 等待“initial imu Transform succ”后按“v”, 出现“开启ROS进行手臂规划”, 至此打开手臂所有状态发布节点
    
+   '''
+   NUC_Terminal_2: 调整头部至合适位置，打开正解程序
+   '''
+   cd /home/lab/syp/kuavo_ws/
+   source devel/setup.bash
+   rostopic pub /robot_head_motion_data dynamic_biped/robotHeadMotionData "{joint_data: [-8, -25.0]}"
+   
+   python3 /home/lab/syp/kuavo_ws/src/motion_capture_ik/scripts/ik_ros_convert.py
+   
+
+   '''
+   PC_Terminal_3: ssh lemon@192.168.3.27 遥操作控制
+   '''
+   python /home/lemon/robot_ros_application/catkin_ws/src/DynamixelSDK/python/tests/protocol1_0/position_publish_2_for_huawei.py
+   
+   '''
+   PC_Terminal_4: 
+   source /home/lab/hanxiao/kuavo_ws/devel/setup.zsh
+   conda activate robodiff
+   python /home/lab/hanxiao/diffusion/diffusion_policy/real_world/hand_srv_to_topic.py
+   python 
+   '''
+
+   
+   ```
+
    - **平行开启新窗口**：按 `<Ctrl B> + "%"`
    - **切换窗口**：按 `<Ctrl B> + "O"`(详见tmux操作手册)
    - **切换到 root 用户**：
@@ -70,7 +110,7 @@
    ```
 2. **打开eef topic**
    ```bash
-   python3 src/motion_capture_ik/scripts/ik_ros_convert.py
+   python3 /home/lab/syp/kuavo_ws/src/motion_capture_ik/scripts/ik_ros_convert.py
    ```
 2. **查看某个话题的内容：**
    ```bash
