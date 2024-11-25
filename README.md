@@ -8,7 +8,7 @@
 2. **连接到 NUC：**
    使用 SSH 连接到 NUC：
    ```bash
-   ssh lab@192.168.1.116
+   ssh lab@192.168.3.9
    # 密码: 输入三个空格
    ```
 
@@ -38,9 +38,15 @@
    '''
    cd /home/lab/syp/kuavo_ws/
    source devel/setup.bash
-   rostopic pub /robot_head_motion_data dynamic_biped/robotHeadMotionData "{joint_data: [-8, -25.0]}"
-   
+   conda deactivate
    python3 /home/lab/syp/kuavo_ws/src/motion_capture_ik/scripts/ik_ros_convert.py
+
+   cd /home/lab/syp/kuavo_ws/
+   source devel/setup.bash
+   conda deactivate
+   rostopic pub /robot_head_motion_data dynamic_biped/robotHeadMotionData "{joint_data: [-25, -25.0]}"
+   <!-- rostopic pub /robot_head_motion_data dynamic_biped/robotHeadMotionData "{joint_data: [-8, -25.0]}" -->
+   
    
 
    '''
@@ -52,11 +58,27 @@
    PC_Terminal_4: 
    source /home/lab/hanxiao/kuavo_ws/devel/setup.zsh
    conda activate robodiff
-   python /home/lab/hanxiao/diffusion/diffusion_policy/real_world/hand_srv_to_topic.py
-   python 
+   python /home/lab/hanxiao/kuavo_ws/src/scripts/hand_srv_to_topic.py
+   
    '''
 
-   
+   PC_Terminal_5:
+   ```bash
+   cd /home/lab/hanxiao/dataset/kuavo/task_test
+   rosbag record -o Kuavo_task_test \
+             /camera/color/image_raw/compressed \
+             /camera/depth/image_rect_raw/compressed \
+             /drake_ik/cmd_arm_hand_pose \
+             /drake_ik/real_arm_hand_pose \
+             /kuavo_arm_traj \
+             /robot_arm_q_v_tau \
+             /robot_hand_eff \
+             /robot_hand_position \
+             --bz2 \
+             --duration=20 \
+             --quiet
+   ```
+
    ```
 
    - **平行开启新窗口**：按 `<Ctrl B> + "%"`
@@ -148,3 +170,17 @@
 ```
 [ERROR] [1731511285.818093894]: Client [/hand_srv_to_topic_2262570_1731511285686] wants topic /robot_arm_q_v_tau to have datatype/md5sum [dynamic_biped/robotArmInfo/3871141b674f003bc326e4d8da08f4ad], but our version has [dynamic_biped/robotArmQVVD/a7be9f5331e9207427b0c5c8ace7b977]. Dropping connection.
 ```
+## rosbag record
+cd /home/lab/hanxiao/dataset/kuavo/task_test
+rosbag record -o Kuavo_task_test \
+             /camera/color/image_raw/compressed \
+             /camera/depth/image_rect_raw/compressed \
+             /drake_ik/cmd_arm_hand_pose \
+             /drake_ik/real_arm_hand_pose \
+             /kuavo_arm_traj \
+             /robot_arm_q_v_tau \
+             /robot_hand_eff \
+             /robot_hand_position \
+             --bz2 \
+             --duration=20 \
+             --quiet
