@@ -5,6 +5,9 @@
 
 ### **1. 启动 NUC 和机器人控制系统**
 1. **打开急停按钮下方的 NUC 开机按钮。**
+![alt text](<2024-11-26 19-48-09 的屏幕截图.png>)
+***roscore -> /home/lab/cam.sh -> /home/lab/hd.sh -> ssh lab@192.168.3.9 -> ssh lemon@192.168.3.27 -> /home/lab/rec.sh***
+
 2. **连接到 NUC：**
    使用 SSH 连接到 NUC：
    ```bash
