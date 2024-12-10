@@ -17,11 +17,11 @@ class RealsensePointCloud:
         self.bridge = CvBridge()
 
         # 订阅RGB和深度图像
-        self.depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
-        self.color_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
+        self.depth_sub = message_filters.Subscriber('/cam_1/aligned_depth_to_color/image_raw', Image)
+        self.color_sub = message_filters.Subscriber('/cam_1/color/image_raw', Image)
         
         # 订阅相机内参信息
-        self.info_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/camera_info', CameraInfo)
+        self.info_sub = message_filters.Subscriber('/cam_1/aligned_depth_to_color/camera_info', CameraInfo)
         
         # 使用时间同步来订阅多个话题
         self.ts = message_filters.ApproximateTimeSynchronizer([self.depth_sub, self.color_sub, self.info_sub], 10, 0.1)
@@ -84,16 +84,16 @@ class RealsensePointCloud:
         # 将点云数据转换为PointCloud2消息
         header = std_msgs.msg.Header()
         header.stamp = rospy.Time.now()
-        header.frame_id = "camera_link"
+        header.frame_id = "cam_1_link"
         
         pc_data = point_cloud2.create_cloud_xyz32(header, points[:, :3])
 
-        # 使用Open3D进行可视化
-        self.pcd.points = o3d.utility.Vector3dVector(points[:, :3])  # 设置3D点坐标
-        self.pcd.colors = o3d.utility.Vector3dVector(points[:, 3:] / 255.0)  # 设置颜色（归一化为0-1）
+        # # 使用Open3D进行可视化
+        # self.pcd.points = o3d.utility.Vector3dVector(points[:, :3])  # 设置3D点坐标
+        # self.pcd.colors = o3d.utility.Vector3dVector(points[:, 3:] / 255.0)  # 设置颜色（归一化为0-1）
         
-        # 可视化点云
-        o3d.visualization.draw_geometries([self.pcd])
+        # # 可视化点云
+        # o3d.visualization.draw_geometries([self.pcd])
 
         # 发布点云数据
         self.pc_pub.publish(pc_data)

@@ -64,9 +64,9 @@ def extract_pointcloud_from_rosbag(bag_file, topic_name, output_pcd_file):
         rgb_int = struct.unpack('I', struct.pack('f', rgb))[0]
         print(rgb_int)
         # 提取 RGB 分量
-        b = (rgb_int & 0xFF)  # 提取红色通道
-        g = ((rgb_int >> 8) & 0xFF)  # 提取绿色通道
-        r = ((rgb_int >> 16) & 0xFF)  # 提取蓝色通道
+        b = (rgb_int & 0xFF)  
+        g = ((rgb_int >> 8) & 0xFF)  
+        r = ((rgb_int >> 16) & 0xFF)  
         
         # 将 RGB 归一化到 [0, 1] 之间
         colors.append([r / 255.0, g / 255.0, b / 255.0])

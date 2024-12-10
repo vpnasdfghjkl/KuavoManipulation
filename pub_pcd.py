@@ -54,12 +54,12 @@ def depth_to_pointcloud(depth_frame, color_frame, intrinsics):
     pc_data = point_cloud2.create_cloud_xyz32(header, points[:, :3])
     
     # 使用Open3D进行可视化
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points[:, :3])  # 设置3D点坐标
-    pcd.colors = o3d.utility.Vector3dVector(points[:, 3:] / 255.0)  # 设置颜色（归一化为0-1）
+    # pcd = o3d.geometry.PointCloud()
+    # pcd.points = o3d.utility.Vector3dVector(points[:, :3])  # 设置3D点坐标
+    # pcd.colors = o3d.utility.Vector3dVector(points[:, 3:] / 255.0)  # 设置颜色（归一化为0-1）
     
     # 可视化点云
-    o3d.visualization.draw_geometries([pcd])
+    # o3d.visualization.draw_geometries([pcd])
     
     return pc_data
 
