@@ -1,119 +1,101 @@
 import rospy
 import pyrealsense2 as rs
 import numpy as np
-import open3d as o3d
 from sensor_msgs.msg import PointCloud2
 import std_msgs.msg
 from sensor_msgs import point_cloud2
+import time
+import threading
 
-def depth_to_pointcloud(depth_frame, color_frame, intrinsics):
-    """
-    将对齐后的深度图像和RGB图像转化为点云
-    """
-    # 获取深度图像数据
-    depth_image = np.asanyarray(depth_frame.get_data())
-    color_image = np.asanyarray(color_frame.get_data())
-    
-    # 获取图像的尺寸
-    height, width = depth_image.shape
-    
-    # 获取相机内参
-    depth_intrinsics = intrinsics
-    depth_scale = 0.001  # 深度图像的单位通常是毫米，我们将其转换为米
-    
-    # 创建空的点云数组
-    points = []
-    
-    # 生成点云数据
-    for v in range(height):
-        for u in range(width):
-            # 获取深度值
-            depth = depth_image[v, u] * depth_scale
-            if depth == 0:
-                continue  # 跳过无效的点
-            
-            # 获取颜色值
-            color = color_image[v, u]
-            
-            # 计算世界坐标 (x, y, z)
-            x = (u - depth_intrinsics.ppx) * depth / depth_intrinsics.fx
-            y = (v - depth_intrinsics.ppy) * depth / depth_intrinsics.fy
-            z = depth
-            
-            # 添加点云数据
-            points.append([x, y, z, color[0], color[1], color[2]])
-    
-    # 转换为NumPy数组
-    points = np.array(points, dtype=np.float32)
-    
-    # 将点云数据转换为PointCloud2消息
-    header = std_msgs.msg.Header()
-    header.stamp = rospy.Time.now()
-    header.frame_id = "camera_link"
-    
-    pc_data = point_cloud2.create_cloud_xyz32(header, points[:, :3])
-    
-    # 使用Open3D进行可视化
-    # pcd = o3d.geometry.PointCloud()
-    # pcd.points = o3d.utility.Vector3dVector(points[:, :3])  # 设置3D点坐标
-    # pcd.colors = o3d.utility.Vector3dVector(points[:, 3:] / 255.0)  # 设置颜色（归一化为0-1）
-    
-    # 可视化点云
-    # o3d.visualization.draw_geometries([pcd])
-    
-    return pc_data
+class PointCloudPublisher:
+    def __init__(self):
+        # Initialize ROS node
+        rospy.init_node('realsense_pointcloud', anonymous=True)
 
-def main():
-    rospy.init_node('realsense_pointcloud', anonymous=True)
-    
-    # 创建Realsense管道
-    pipeline = rs.pipeline()
-    
-    # 配置流
-    config = rs.config()
-    config.enable_stream(rs.stream.color, 640, 480, rs.format.rgb8, 30)
-    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-    
-    # 启动管道
-    pipeline.start(config)
-    
-    # 创建对齐对象，深度图像和RGB图像对齐
-    align_to = rs.stream.color
-    align = rs.align(align_to)
-    
-    # 获取相机内参
-    profile = pipeline.get_active_profile()
-    intrinsics = profile.get_stream(rs.stream.depth).as_video_stream_profile().get_intrinsics()
-    
-    # 创建点云发布者
-    pub = rospy.Publisher('/pcd', PointCloud2, queue_size=1)
-    
-    rate = rospy.Rate(10)  # 发布频率 10Hz
-    
-    while not rospy.is_shutdown():
-        # 获取帧
-        frames = pipeline.wait_for_frames()
-        
-        # 对齐帧
-        aligned_frames = align.process(frames)
-        
-        # 获取RGB和对齐后的深度帧
-        color_frame = aligned_frames.get_color_frame()
-        depth_frame = aligned_frames.get_depth_frame()
-        
-        # 获取点云
-        pc_data = depth_to_pointcloud(depth_frame, color_frame, intrinsics)
-        
-        # 发布点云数据
-        pub.publish(pc_data)
-        
-        rate.sleep()
-    
-    # 停止管道
-    pipeline.stop()
+        # Create Realsense pipeline
+        self.pipeline = rs.pipeline()
+        config = rs.config()
+        config.enable_stream(rs.stream.color, 640, 480, rs.format.rgb8, 30)
+        config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        self.pipeline.start(config)
+
+        # Create alignment object
+        self.align_to = rs.stream.color
+        self.align = rs.align(self.align_to)
+
+        # Get camera intrinsics
+        profile = self.pipeline.get_active_profile()
+        self.intrinsics = profile.get_stream(rs.stream.depth).as_video_stream_profile().get_intrinsics()
+
+        # Create point cloud publisher
+        self.pub = rospy.Publisher('/pcd', PointCloud2, queue_size=1)
+
+        # Create a thread for publishing
+        self.pub_thread = threading.Thread(target=self.publish_point_cloud)
+        self.pub_thread.daemon = True
+        self.pub_thread.start()
+
+    def depth_to_pointcloud(self, depth_frame, color_frame):
+        """
+        Convert depth and color frames to a point cloud.
+        """
+        depth_image = np.asanyarray(depth_frame.get_data())
+        color_image = np.asanyarray(color_frame.get_data())
+
+        # Convert depth units to meters
+        depth_scale = 0.001
+        depth_image = depth_image * depth_scale
+
+        height, width = depth_image.shape
+        u, v = np.meshgrid(np.arange(width), np.arange(height))
+
+        # Compute 3D coordinates
+        x = (u - self.intrinsics.ppx) * depth_image / self.intrinsics.fx
+        y = (v - self.intrinsics.ppy) * depth_image / self.intrinsics.fy
+        z = depth_image
+
+        # Filter invalid points
+        valid = (z > 0.3) & (z <= 1.0)
+        x, y, z = x[valid], y[valid], z[valid]
+        colors = color_image[valid]
+
+        points = np.column_stack((x, y, z, colors))
+
+        # Create PointCloud2 message
+        header = std_msgs.msg.Header()
+        header.stamp = rospy.Time.now()
+        header.frame_id = "camera_link"
+        pc_data = point_cloud2.create_cloud_xyz32(header, points[:, :3])
+
+        return pc_data
+
+    def publish_point_cloud(self):
+        """
+        Continuously capture frames and publish point cloud data.
+        """
+        rate = rospy.Rate(30)  # Publish at 30Hz
+
+        while not rospy.is_shutdown():
+            start_time = time.time()
+            frames = self.pipeline.wait_for_frames()
+            aligned_frames = self.align.process(frames)
+
+            color_frame = aligned_frames.get_color_frame()
+            depth_frame = aligned_frames.get_depth_frame()
+
+            # Process and publish the point cloud
+            pc_data = self.depth_to_pointcloud(depth_frame, color_frame)
+            self.pub.publish(pc_data)
+
+            print(f"Point cloud published in {time.time() - start_time:.5f} seconds")
+            rate.sleep()
+
+    def stop(self):
+        self.pipeline.stop()
 
 if __name__ == '__main__':
     try:
-        main()
+        point_cloud_publisher = PointCloudPublisher()
+        rospy.spin()
     except rospy.ROSInterruptException:
         pass

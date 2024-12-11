@@ -111,6 +111,7 @@ def optimized_extract_xyzrgb_from_pointcloud2(msg):
     cur_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     # save_to_pcd(xyzrgb, f"pcd_{cur_time}.pcd")
     # display_point_cloud(xyzrgb)
+    xyzrgb[:, 3:] = xyzrgb[:, 3:]   # RGB 范围归一化到 [0, 1]
     return xyzrgb
 
 def save_to_pcd(xyzrgb, filename):
@@ -156,7 +157,45 @@ def display_point_cloud(xyzrgb):
                                       height=600,
                                       point_show_normal=False)
     
-    
+
+
+def display_point_cloud_with_cursor_info(xyzrgb):
+    """
+    实时显示鼠标指针所指点的 XYZ 和 RGB 值。
+    :param xyzrgb: 点云数据 (N, 6) 的 numpy 数组，前3列为 XYZ，后3列为 RGB
+    """
+    # 拆分点云数据
+    xyz = xyzrgb[:, :3]
+    rgb = xyzrgb[:, 3:] / 255.0  # RGB 归一化到 [0, 1]
+
+    # 创建点云对象
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(xyz)
+    point_cloud.colors = o3d.utility.Vector3dVector(rgb)
+
+    # 创建可视化器
+    vis = o3d.visualization.VisualizerWithKeyCallback()
+    vis.create_window(window_name="Point Cloud Viewer with Cursor Info", width=800, height=600)
+    vis.add_geometry(point_cloud)
+
+    # 定义回调函数，实时获取鼠标指针指向的点的信息
+    def mouse_callback(vis, action, mods):
+        # 获取选中的点索引
+        picked_idx = vis.get_picked_points()
+        if picked_idx:
+            idx = picked_idx[-1]  # 取最后一个被选中的点
+            point_xyz = xyz[idx]
+            point_rgb = rgb[idx]
+            print(f"Point Index: {idx}, XYZ: {point_xyz}, RGB: {point_rgb}")
+
+    # 注册鼠标事件回调
+    vis.register_key_callback(ord("P"), mouse_callback)  # 按键 'P' 激活选点模式
+
+    # 启动可视化
+    vis.run()
+    vis.destroy_window()
+
+
 def extract_pointcloud_from_rosbag(bag_file, topic_name, output_pcd_file, voxel_size=0.01): # to be mod
     """
     从 rosbag 文件中提取点云数据并保存为 PCD 文件。

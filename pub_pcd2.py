@@ -55,14 +55,15 @@ def process_frames(pipeline, align, intrinsics, pub):
             continue
 
         # 生成点云数据
+        cur_time = time.time()  
         pc_data = depth_to_pointcloud_optimized(depth_frame, color_frame, intrinsics)
-
+        print(f"Point cloud generated in {time.time() - cur_time:.5f} seconds")
         # 发布点云数据
-        header = std_msgs.msg.Header()
-        header.stamp = rospy.Time.now()
-        header.frame_id = "camera_link"
-        cloud_msg = point_cloud2.create_cloud_xyz32(header, pc_data[:, :3])
-        pub.publish(cloud_msg)
+        # header = std_msgs.msg.Header()
+        # header.stamp = rospy.Time.now()
+        # header.frame_id = "camera_link"
+        # cloud_msg = point_cloud2.create_cloud_xyz32(header, pc_data[:, :3])
+        # pub.publish(cloud_msg)
 
 def main():
     rospy.init_node('realsense_pointcloud', anonymous=True)

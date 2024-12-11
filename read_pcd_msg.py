@@ -5,9 +5,10 @@ from sensor_msgs.msg import PointCloud2
 import open3d as o3d
 import numpy as np
 import time
-from utils.pcd_util import save_to_pcd, display_point_cloud, optimized_extract_xyzrgb_from_pointcloud2
+from utils.pcd_util import save_to_pcd, display_point_cloud, optimized_extract_xyzrgb_from_pointcloud2,display_point_cloud_with_cursor_info
 from message_filters import ApproximateTimeSynchronizer, Subscriber
-
+import tf2_ros
+import geometry_msgs.msg
 
 def transform_point_cloud(xyzrgb, transform_matrix):
     """
@@ -45,16 +46,16 @@ class PointCloudMerger:
             xyzrgb1 = transform_point_cloud(xyzrgb1, self.transform_matrices[0])
             xyzrgb2 = transform_point_cloud(xyzrgb2, self.transform_matrices[1])
 
-            # 保存单独的点云
+            # # 保存单独的点云
             # save_to_pcd(xyzrgb1, self.output_files[0])
             # save_to_pcd(xyzrgb2, self.output_files[1])
-            rospy.loginfo(f"Saved transformed point clouds to {self.output_files}")
+            # rospy.loginfo(f"Saved transformed point clouds to {self.output_files}")
 
-            # 合并点云
+            # # 合并点云
             merged_cloud = merge_point_clouds([xyzrgb1, xyzrgb2])
             # save_to_pcd(merged_cloud, self.merge_file)
             display_point_cloud(merged_cloud)
-            rospy.loginfo(f"Saved merged point cloud to {self.merge_file}")
+            # rospy.loginfo(f"Saved merged point cloud to {self.merge_file}")
 
         except Exception as e:
             rospy.logerr(f"Error processing point clouds: {e}")
@@ -67,16 +68,18 @@ def main():
 
     # 自定义变换矩阵 (根据实际配置修改)
     transform_matrices = [
-        np.array([[1, 0, 0, 0],
-                  [0, 1, 0, 0],
-                  [0, 0, 1, 0],
-                  [0, 0, 0, 1]]),  # 相机1到世界坐标系的变换
-        
-        np.array([[1, 0, 0, -0.7],
-                  [0, 1, 0, 0.7],
-                  [0, 0, 1, -0.5],
-                  [0, 0, 0, 1]])   # 相机2到世界坐标系的变换
+    # First transformation matrix
+    np.array([
+        [ 0.79964245,  0.47627515, -0.3656965 ,  0.43955772 ],
+        [ 0.0440602,   0.56083086,  0.82675719, -0.47576271],
+        [ 0.59885778, -0.6772228,   0.42747939,  0.77819415],
+        [ 0,           0,           0,           1          ]
+    ]),
+
+    # Identity matrix (no transformation)
+    np.eye(4)  # Equivalent to np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     ]
+
 
     merger = PointCloudMerger(output_files, merge_file, transform_matrices)
 
