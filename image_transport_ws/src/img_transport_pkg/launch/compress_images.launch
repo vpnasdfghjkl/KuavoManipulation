@@ -1,0 +1,3 @@
+<launch>
+  <node name="cam_3_compress" pkg="image_transport" type="republish" output="screen" args="raw in:=/cam_3/image_raw compressed out:=/cam_3/color" />
+</launch>

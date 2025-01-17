@@ -44,7 +44,7 @@ class PointCloudMerger:
 
             # 将点云变换到世界坐标系
             xyzrgb1 = transform_point_cloud(xyzrgb1, self.transform_matrices[0])
-            xyzrgb2 = transform_point_cloud(xyzrgb2, self.transform_matrices[1])
+            # xyzrgb2 = transform_point_cloud(xyzrgb2, self.transform_matrices[1])
 
             # # 保存单独的点云
             # save_to_pcd(xyzrgb1, self.output_files[0])
@@ -52,10 +52,10 @@ class PointCloudMerger:
             # rospy.loginfo(f"Saved transformed point clouds to {self.output_files}")
 
             # # 合并点云
-            merged_cloud = merge_point_clouds([xyzrgb1, xyzrgb2])
+            # merged_cloud = merge_point_clouds([xyzrgb1, xyzrgb2])
             # save_to_pcd(merged_cloud, self.merge_file)
-            display_point_cloud(merged_cloud)
-            # rospy.loginfo(f"Saved merged point cloud to {self.merge_file}")
+            # display_point_cloud(xyzrgb1)
+            rospy.loginfo(f"Saved merged point cloud to {self.merge_file}")
 
         except Exception as e:
             rospy.logerr(f"Error processing point clouds: {e}")
@@ -70,10 +70,10 @@ def main():
     transform_matrices = [
     # First transformation matrix
     np.array([
-        [ 0.79964245,  0.47627515, -0.3656965 ,  0.43955772 ],
-        [ 0.0440602,   0.56083086,  0.82675719, -0.47576271],
-        [ 0.59885778, -0.6772228,   0.42747939,  0.77819415],
-        [ 0,           0,           0,           1          ]
+        [-0.18102479, 0.46782079, -0.86508597, 0.54459506],
+        [-0.50241591, 0.71218871, 0.49027084, -0.59642477],
+        [0.84546335, 0.52338413, 0.1061168, 0.97159556],
+        [0, 0, 0, 1]
     ]),
 
     # Identity matrix (no transformation)

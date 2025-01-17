@@ -1,0 +1,8 @@
+prefix=/home/lab/hanxiao/KuavoManipulation/image_transport_ws/devel
+
+Name: img_transport_pkg
+Description: Description of img_transport_pkg
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

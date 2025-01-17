@@ -27,7 +27,7 @@ def find_corners(images, pattern_size):
 
             # 可视化角点
             cv2.drawChessboardCorners(img, pattern_size, corners, ret)
-            # cv2.imshow("Chessboard Corners", img)
+            cv2.imshow("Chessboard Corners", img)
             cv2.waitKey(500)  # 等待 500ms
         else:
             print(f"Warning: Failed to find corners in {img_path}")
@@ -153,3 +153,15 @@ visualize_camera_pose(RET[5], RET[6])
  [-0.47576271]
  [ 0.77819415]]
  '''
+ 
+'''20250113 
+立体标定结果:
+旋转矩阵 R:
+ [[-0.18102479  0.46782079 -0.86508597]
+ [-0.50241591  0.71218871  0.49027084]
+ [ 0.84546335  0.52338413  0.1061168 ]]
+平移向量 T:
+ [[ 0.54459506]
+ [-0.59642477]
+ [ 0.97159556]]
+'''

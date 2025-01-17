@@ -43,24 +43,25 @@ def publish_transform():
         [ 0,           0,           0,           1          ]
     ])
     rotation_matrix = np.array([
-    [ 0.79964245,  0.47627515, -0.3656965 ],
-    [ 0.0440602,   0.56083086,  0.82675719],
-    [ 0.59885778, -0.6772228,   0.42747939]
-])
+    # [ 0.79964245,  0.47627515, -0.3656965 ],
+    # [ 0.0440602,   0.56083086,  0.82675719],
+    # [ 0.59885778, -0.6772228,   0.42747939]
+    [ 0.7996424542501339,  -0.044060200234181834, -0.5988577828801646 ],
+    [ 0.0,   1.0,  0.0],
+    [ 0.0,  0,   1.0]
+]).T
     from scipy.spatial.transform import Rotation as R
-    # 交换 X 和 Z 轴
-    rotation_matrix_swapped = rotation_matrix.copy()
-    # rotation_matrix_swapped[:, [0, 2]] = rotation_matrix[:, [2, 0]]
-
-    # 使用 scipy 的 Rotation 类将旋转矩阵转换为四元数
-    rotation = R.from_matrix(rotation_matrix_swapped)
+    
+    rotation = R.from_matrix(rotation_matrix)
     qx, qy, qz, qw = rotation.as_quat()
+    roll, pitch, yaw = rotation.as_euler('zyx')
+    print(f"Roll: {np.degrees(roll):.2f}, Pitch: {np.degrees(pitch):.2f}, Yaw: {np.degrees(yaw):.2f}")
     qx, qy, qz, qw = normalize_quaternion(qx, qy, qz, qw)
    
-    transform_cam1.transform.rotation.x = qx
-    transform_cam1.transform.rotation.y = qy
-    transform_cam1.transform.rotation.z = qz
-    transform_cam1.transform.rotation.w = qw
+    transform_cam1.transform.rotation.x = 0.4503699044545254
+    transform_cam1.transform.rotation.y = 0.2888377663189
+    transform_cam1.transform.rotation.z = 0.1294276578497574
+    transform_cam1.transform.rotation.w = 0.8348581767540258
     
 
     tf_broadcaster.sendTransform(transform_cam1)

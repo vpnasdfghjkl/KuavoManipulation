@@ -157,6 +157,7 @@ def display_point_cloud(xyzrgb):
                                       height=600,
                                       point_show_normal=False)
     
+    
 
 
 def display_point_cloud_with_cursor_info(xyzrgb):
